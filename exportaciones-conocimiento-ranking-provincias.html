@@ -17,6 +17,7 @@
     --hair2:    #f0f0f2;
     --accent:       #0071e3;
     --bar-default:  #d8d8dc;
+    --er-bg:        rgba(0,113,227,0.08);
   }
   @media (prefers-color-scheme: dark) {
     :root:where(:not([data-theme="light"])) .viz-root {
@@ -28,6 +29,7 @@
       --hair2:    #2c2c2e;
       --accent:       #0a84ff;
       --bar-default:  #3a3a3d;
+      --er-bg:        rgba(10,132,255,0.14);
     }
   }
   :root[data-theme="dark"] .viz-root {
@@ -39,10 +41,11 @@
     --hair2:    #2c2c2e;
     --accent:       #0a84ff;
     --bar-default:  #3a3a3d;
+    --er-bg:        rgba(10,132,255,0.14);
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: transparent; }
+  html, body { margin: 0; padding: 0; background: transparent; overflow-x: hidden; }
   body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 
   .viz-root {
@@ -53,17 +56,18 @@
   .viz-title { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-size: 24px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; color: var(--ink); margin: 0 0 6px; }
   .viz-sub { font-size: 12.5px; color: var(--muted); margin: 0 0 18px; font-weight: 500; letter-spacing: -.005em; }
 
-  .rows { display: flex; flex-direction: column; gap: 2px; }
+  .rows { display: flex; flex-direction: column; gap: 2px; margin: 0 -8px; }
   .row {
     display: grid;
     grid-template-columns: 122px 1fr 58px;
     align-items: center;
     gap: 10px;
-    padding: 3.5px 0;
+    padding: 3.5px 8px;
     border-radius: 6px;
   }
   .row.hover { background: var(--hair2); }
-  .row-name { font-size: 12.5px; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row.is-er { background: var(--er-bg); }
+  .row-name { min-width: 0; font-size: 12.5px; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row.is-er .row-name { font-weight: 800; }
   .bar-track { position: relative; height: 14px; }
   .bar { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; background: var(--bar-default); min-width: 2px; }
@@ -99,7 +103,7 @@
 
 <div class="viz-root">
   <p class="viz-title">Entre Ríos exporta menos conocimiento que otras 7 provincias</p>
-  <p class="viz-sub">Exportaciones de economía del conocimiento en los últimos 12 meses (2T 2025 — 1T 2026), millones de dólares</p>
+  <p class="viz-sub">Exportaciones de economía del conocimiento desde abril de 2025 hasta marzo de 2026, millones de dólares</p>
 
   <div class="rows" id="rows"></div>
   <div class="tooltip" id="tooltip"></div>
