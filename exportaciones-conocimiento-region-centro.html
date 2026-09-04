@@ -53,15 +53,12 @@
 
   .viz-root {
     background: var(--surface);
-    border: 1px solid var(--hair);
     border-radius: 16px;
     padding: 22px 24px 18px;
     max-width: 620px;
     margin: 0 auto;
     letter-spacing: -.005em;
   }
-  .viz-kicker { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
-  .viz-title { font-size: 19px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin: 0 0 2px; }
   .viz-sub { font-size: 12.5px; color: var(--muted); margin: 0 0 18px; font-weight: 500; }
 
   .panels { display: flex; gap: 20px; }
@@ -99,38 +96,21 @@
   .tooltip.show { opacity: 1; }
   .tooltip strong { font-weight: 700; font-variant-numeric: tabular-nums; }
 
-  .viz-footer { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--hair); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .viz-footer { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--hair); }
   .viz-source { font-size: 11px; color: var(--muted); font-weight: 500; }
   .viz-source a { color: var(--muted); }
-  .table-toggle { font: inherit; font-size: 11.5px; font-weight: 600; color: var(--bar-curr); background: none; border: none; cursor: pointer; padding: 4px 0; }
-  .table-toggle:hover { opacity: .65; }
-
-  table.viz-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; display: none; }
-  table.viz-table.show { display: table; }
-  table.viz-table th, table.viz-table td { text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--hair2); color: var(--ink); }
-  table.viz-table th { color: var(--muted); font-weight: 600; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; }
-  table.viz-table td { font-weight: 500; }
-  table.viz-table td:last-child, table.viz-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 
 <div class="viz-root">
-  <p class="viz-kicker">Economía del conocimiento</p>
-  <p class="viz-title">La región centro exportó más</p>
-  <p class="viz-sub">1er trimestre de cada año, en millones de dólares</p>
+  <p class="viz-sub">Exportaciones del primer trimestre de cada año, millones de dólares</p>
 
   <div class="panels" id="panels"></div>
   <div class="tooltip" id="tooltip"></div>
 
-  <table class="viz-table" id="table">
-    <thead><tr><th>Provincia</th><th>1T 2025</th><th>1T 2026</th><th>Var.</th></tr></thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-
   <div class="viz-footer">
     <span class="viz-source">Fuente: <a href="https://app.powerbi.com/view?r=eyJrIjoiMDRmMTIxZDMtODI5Ny00ZGYyLWE1ZWMtOTRlMTBlMDNjYjZhIiwidCI6ImNiODg0ZGI1LTI0ODUtNGY5Yi05MzhlLTNlNjIxZjIyMjU3YiIsImMiOjR9" target="_blank" rel="noopener">Ministerio de Economía de la Nación</a></span>
-    <button class="table-toggle" id="toggleTable" type="button">Ver tabla</button>
   </div>
 </div>
 
@@ -144,7 +124,6 @@ const DATA = [
 (function () {
   const panels = document.getElementById('panels');
   const tooltip = document.getElementById('tooltip');
-  const tbody = document.getElementById('tableBody');
 
   DATA.forEach(d => {
     const delta = ((d.v26 / d.v25 - 1) * 100);
@@ -171,10 +150,6 @@ const DATA = [
       <div class="panel-axis"><span>1T25</span><span>1T26</span></div>
     `;
     panels.appendChild(panel);
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${d.nombre}</td><td>${d.v25.toFixed(1)}</td><td>${d.v26.toFixed(1)}</td><td>+${delta.toFixed(1)}%</td>`;
-    tbody.appendChild(tr);
   });
 
   document.querySelectorAll('.bar').forEach(bar => {
@@ -200,13 +175,6 @@ const DATA = [
     bar.addEventListener('pointerleave', hide);
     bar.addEventListener('focus', show);
     bar.addEventListener('blur', hide);
-  });
-
-  const toggleBtn = document.getElementById('toggleTable');
-  const table = document.getElementById('table');
-  toggleBtn.addEventListener('click', () => {
-    const showing = table.classList.toggle('show');
-    toggleBtn.textContent = showing ? 'Ocultar tabla' : 'Ver tabla';
   });
 })();
 </script>

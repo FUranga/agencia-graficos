@@ -53,14 +53,12 @@
 
   .viz-root {
     background: var(--surface);
-    border: 1px solid var(--hair);
     border-radius: 16px;
     padding: 22px 24px 18px;
     max-width: 620px;
     margin: 0 auto;
     letter-spacing: -.005em;
   }
-  .viz-kicker { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
   .viz-title { font-size: 19px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin: 0 0 2px; }
   .viz-sub { font-size: 12.5px; color: var(--muted); margin: 0 0 16px; font-weight: 500; }
 
@@ -95,26 +93,15 @@
   .tooltip.show { opacity: 1; }
   .tooltip strong { font-weight: 700; font-variant-numeric: tabular-nums; }
 
-  .viz-footer { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .viz-footer { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair); }
   .viz-source { font-size: 11px; color: var(--muted); font-weight: 500; }
   .viz-source a { color: var(--muted); }
-  .table-toggle { font: inherit; font-size: 11.5px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px 0; }
-  .table-toggle:hover { opacity: .65; }
-
-  table.viz-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; display: none; }
-  table.viz-table.show { display: table; }
-  table.viz-table th, table.viz-table td { text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--hair2); color: var(--ink); }
-  table.viz-table th { color: var(--muted); font-weight: 600; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; position: sticky; top: 0; background: var(--surface); }
-  table.viz-table td { font-weight: 500; }
-  table.viz-table td:last-child, table.viz-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
-  .table-scroll { max-height: 260px; overflow-y: auto; }
 </style>
 </head>
 <body>
 
 <div class="viz-root">
-  <p class="viz-kicker">Economía del conocimiento</p>
-  <p class="viz-title">Entre Ríos: exportaciones trimestrales</p>
+  <p class="viz-title">Las exportaciones de economía del conocimiento crecen en Entre Ríos, pero están por debajo del máximo histórico</p>
   <p class="viz-sub">Millones de dólares, valor trimestral · 2007 — 2026</p>
 
   <div class="chart-wrap">
@@ -124,14 +111,6 @@
 
   <div class="viz-footer">
     <span class="viz-source">Fuente: <a href="https://app.powerbi.com/view?r=eyJrIjoiMDRmMTIxZDMtODI5Ny00ZGYyLWE1ZWMtOTRlMTBlMDNjYjZhIiwidCI6ImNiODg0ZGI1LTI0ODUtNGY5Yi05MzhlLTNlNjIxZjIyMjU3YiIsImMiOjR9" target="_blank" rel="noopener">Ministerio de Economía de la Nación</a></span>
-    <button class="table-toggle" id="toggleTable" type="button">Ver tabla</button>
-  </div>
-
-  <div class="table-scroll">
-    <table class="viz-table" id="table">
-      <thead><tr><th>Trimestre</th><th>Millones US$</th></tr></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
   </div>
 </div>
 
@@ -198,7 +177,7 @@ const DATA = [{"periodo": "2007-Q1", "v": 2.859}, {"periodo": "2007-Q2", "v": 3.
     y: y(DATA[maxIdx].v) - 10,
     'text-anchor': maxIdx > DATA.length - 8 ? 'end' : 'middle'
   });
-  maxLabel.textContent = `máximo trimestral: US$ ${DATA[maxIdx].v.toFixed(1)}M (${DATA[maxIdx].periodo.replace('-Q', ' T')})`;
+  maxLabel.textContent = `US$ ${DATA[maxIdx].v.toFixed(1)}M`;
   svg.appendChild(maxLabel);
 
   const lastIdx = DATA.length - 1;
@@ -208,7 +187,7 @@ const DATA = [{"periodo": "2007-Q1", "v": 2.859}, {"periodo": "2007-Q2", "v": 3.
     const lastLabel = el('text', { class: 'axis-label', x: x(lastIdx) - 4, y: y(DATA[lastIdx].v) - 8, 'text-anchor': 'end' });
     lastLabel.setAttribute('fill', 'var(--ink)');
     lastLabel.style.fontWeight = '700';
-    lastLabel.textContent = `último dato: US$ ${DATA[lastIdx].v.toFixed(1)}M`;
+    lastLabel.textContent = `US$ ${DATA[lastIdx].v.toFixed(1)}M`;
     svg.appendChild(lastLabel);
   }
 
@@ -261,23 +240,6 @@ const DATA = [{"periodo": "2007-Q1", "v": 2.859}, {"periodo": "2007-Q2", "v": 3.
     showAt(nearestIndex(px));
   });
   hit.addEventListener('pointerleave', hide);
-
-  const tbody = document.getElementById('tableBody');
-  DATA.forEach(d => {
-    const tr = document.createElement('tr');
-    const td1 = document.createElement('td');
-    td1.textContent = d.periodo.replace('-Q', ' — T');
-    const td2 = document.createElement('td');
-    td2.textContent = d.v.toFixed(1);
-    tr.appendChild(td1); tr.appendChild(td2);
-    tbody.appendChild(tr);
-  });
-  const toggleBtn = document.getElementById('toggleTable');
-  const table = document.getElementById('table');
-  toggleBtn.addEventListener('click', () => {
-    const showing = table.classList.toggle('show');
-    toggleBtn.textContent = showing ? 'Ocultar tabla' : 'Ver tabla';
-  });
 })();
 </script>
 
