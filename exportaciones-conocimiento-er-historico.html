@@ -188,13 +188,30 @@ const DATA = [{"periodo": "2007-Q1", "v": 2.859}, {"periodo": "2007-Q2", "v": 3.
   DATA.forEach((d, i) => { lineD += (i === 0 ? 'M' : 'L') + ` ${x(i)} ${y(d.v)} `; });
   svg.appendChild(el('path', { class: 'line-path', d: lineD }));
 
-  // record point (last = highest)
+  // punto mas alto real de la serie trimestral (no asumir que es el ultimo)
+  let maxIdx = 0;
+  DATA.forEach((d, i) => { if (d.v > DATA[maxIdx].v) maxIdx = i; });
+  const maxDot = el('circle', { class: 'record-dot', cx: x(maxIdx), cy: y(DATA[maxIdx].v), r: 4 });
+  svg.appendChild(maxDot);
+  const maxLabel = el('text', {
+    class: 'record-label',
+    x: x(maxIdx),
+    y: y(DATA[maxIdx].v) - 10,
+    'text-anchor': maxIdx > DATA.length - 8 ? 'end' : 'middle'
+  });
+  maxLabel.textContent = `máximo trimestral: US$ ${DATA[maxIdx].v.toFixed(1)}M (${DATA[maxIdx].periodo.replace('-Q', ' T')})`;
+  svg.appendChild(maxLabel);
+
+  // valor del ultimo dato (endpoint), sin llamarlo "record" -- ver nota sobre
+  // record anualizado en el cuerpo de la nota, es una metrica distinta
   const lastIdx = DATA.length - 1;
-  const recordDot = el('circle', { class: 'record-dot', cx: x(lastIdx), cy: y(DATA[lastIdx].v), r: 4 });
-  svg.appendChild(recordDot);
-  const recLabel = el('text', { class: 'record-label', x: x(lastIdx) - 6, y: y(DATA[lastIdx].v) - 10, 'text-anchor': 'end' });
-  recLabel.textContent = `récord: US$ ${DATA[lastIdx].v.toFixed(1)}M`;
-  svg.appendChild(recLabel);
+  if (lastIdx !== maxIdx) {
+    const lastDot = el('circle', { cx: x(lastIdx), cy: y(DATA[lastIdx].v), r: 3, fill: 'var(--line)', stroke: 'var(--surface-1)', 'stroke-width': 2 });
+    svg.appendChild(lastDot);
+    const lastLabel = el('text', { class: 'axis-label', x: x(lastIdx) - 4, y: y(DATA[lastIdx].v) - 8, 'text-anchor': 'end', fill: 'var(--text-secondary)' });
+    lastLabel.textContent = `último dato: US$ ${DATA[lastIdx].v.toFixed(1)}M`;
+    svg.appendChild(lastLabel);
+  }
 
   // crosshair + hover dot
   const crosshair = el('line', { class: 'crosshair', x1: 0, x2: 0, y1: padT, y2: H - padB });
