@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Serie histórica — exportaciones de conocimiento, Entre Ríos</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --muted:          #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --line:           #2a78d6;
+    --line-fill:      rgba(42,120,214,0.10);
+    --dot-record:     #eb6834;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted:          #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --line:           #3987e5;
+      --line-fill:      rgba(57,135,229,0.14);
+      --dot-record:     #d95926;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted:          #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --line:           #3987e5;
+    --line-fill:      rgba(57,135,229,0.14);
+    --dot-record:     #d95926;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--page); }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  .viz-root {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px 16px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .viz-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0 0 2px; }
+  .viz-sub { font-size: 12px; color: var(--text-secondary); margin: 0 0 14px; }
+
+  .chart-wrap { position: relative; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .gridline { stroke: var(--gridline); stroke-width: 1; }
+  .axis-label { fill: var(--muted); font-size: 10px; }
+  .line-path { fill: none; stroke: var(--line); stroke-width: 2; }
+  .area-path { fill: var(--line-fill); stroke: none; }
+  .record-dot { fill: var(--dot-record); stroke: var(--surface-1); stroke-width: 2; }
+  .record-label { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+  .crosshair { stroke: var(--baseline); stroke-width: 1; opacity: 0; pointer-events: none; }
+  .hover-dot { fill: var(--line); stroke: var(--surface-1); stroke-width: 2; opacity: 0; pointer-events: none; }
+  .hit-area { fill: transparent; }
+
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--text-primary);
+    color: var(--surface-1);
+    font-size: 11px;
+    padding: 6px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(-50%, -110%);
+    transition: opacity .08s ease;
+    z-index: 5;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip strong { font-weight: 600; }
+
+  .viz-footer { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--gridline); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .viz-source { font-size: 10.5px; color: var(--muted); }
+  .viz-source a { color: var(--muted); }
+  .table-toggle { font-size: 10.5px; color: var(--text-secondary); background: none; border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; cursor: pointer; }
+  .table-toggle:hover { background: var(--gridline); }
+
+  table.viz-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 12px; display: none; max-height: 260px; overflow-y: auto; }
+  table.viz-table.show { display: table; }
+  table.viz-table th, table.viz-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--gridline); color: var(--text-primary); }
+  table.viz-table th { color: var(--text-secondary); font-weight: 500; position: sticky; top: 0; background: var(--surface-1); }
+  table.viz-table td:last-child, table.viz-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .table-scroll { max-height: 260px; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<div class="viz-root">
+  <p class="viz-title">Entre Ríos: exportaciones trimestrales de economía del conocimiento</p>
+  <p class="viz-sub">Millones de dólares, valor trimestral. 2007 — 2026.</p>
+
+  <div class="chart-wrap">
+    <svg id="svg" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <div class="viz-footer">
+    <span class="viz-source">Fuente: <a href="https://app.powerbi.com/view?r=eyJrIjoiMDRmMTIxZDMtODI5Ny00ZGYyLWE1ZWMtOTRlMTBlMDNjYjZhIiwidCI6ImNiODg0ZGI1LTI0ODUtNGY5Yi05MzhlLTNlNjIxZjIyMjU3YiIsImMiOjR9" target="_blank" rel="noopener">Ministerio de Economía de la Nación</a> (dashboard público de exportaciones de servicios basados en conocimiento).</span>
+    <button class="table-toggle" id="toggleTable" type="button">Ver tabla</button>
+  </div>
+
+  <div class="table-scroll">
+    <table class="viz-table" id="table">
+      <thead><tr><th>Trimestre</th><th>Millones US$</th></tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const DATA = [{"periodo": "2007-Q1", "v": 2.859}, {"periodo": "2007-Q2", "v": 3.224}, {"periodo": "2007-Q3", "v": 3.565}, {"periodo": "2007-Q4", "v": 4.277}, {"periodo": "2008-Q1", "v": 3.836}, {"periodo": "2008-Q2", "v": 4.586}, {"periodo": "2008-Q3", "v": 4.757}, {"periodo": "2008-Q4", "v": 5.102}, {"periodo": "2009-Q1", "v": 4.155}, {"periodo": "2009-Q2", "v": 4.587}, {"periodo": "2009-Q3", "v": 4.732}, {"periodo": "2009-Q4", "v": 5.543}, {"periodo": "2010-Q1", "v": 5.201}, {"periodo": "2010-Q2", "v": 7.028}, {"periodo": "2010-Q3", "v": 5.782}, {"periodo": "2010-Q4", "v": 7.41}, {"periodo": "2011-Q1", "v": 7.626}, {"periodo": "2011-Q2", "v": 7.96}, {"periodo": "2011-Q3", "v": 7.956}, {"periodo": "2011-Q4", "v": 11.646}, {"periodo": "2012-Q1", "v": 8.311}, {"periodo": "2012-Q2", "v": 8.348}, {"periodo": "2012-Q3", "v": 8.114}, {"periodo": "2012-Q4", "v": 8.784}, {"periodo": "2013-Q1", "v": 7.271}, {"periodo": "2013-Q2", "v": 8.295}, {"periodo": "2013-Q3", "v": 8.382}, {"periodo": "2013-Q4", "v": 10.145}, {"periodo": "2014-Q1", "v": 6.788}, {"periodo": "2014-Q2", "v": 7.511}, {"periodo": "2014-Q3", "v": 7.642}, {"periodo": "2014-Q4", "v": 9.328}, {"periodo": "2015-Q1", "v": 6.657}, {"periodo": "2015-Q2", "v": 8.095}, {"periodo": "2015-Q3", "v": 8.063}, {"periodo": "2015-Q4", "v": 8.408}, {"periodo": "2016-Q1", "v": 7.66}, {"periodo": "2016-Q2", "v": 8.279}, {"periodo": "2016-Q3", "v": 9.237}, {"periodo": "2016-Q4", "v": 13.016}, {"periodo": "2017-Q1", "v": 9.953}, {"periodo": "2017-Q2", "v": 11.794}, {"periodo": "2017-Q3", "v": 11.84}, {"periodo": "2017-Q4", "v": 14.964}, {"periodo": "2018-Q1", "v": 10.914}, {"periodo": "2018-Q2", "v": 10.493}, {"periodo": "2018-Q3", "v": 8.738}, {"periodo": "2018-Q4", "v": 10.288}, {"periodo": "2019-Q1", "v": 8.333}, {"periodo": "2019-Q2", "v": 8.937}, {"periodo": "2019-Q3", "v": 9.078}, {"periodo": "2019-Q4", "v": 9.529}, {"periodo": "2020-Q1", "v": 8.361}, {"periodo": "2020-Q2", "v": 6.873}, {"periodo": "2020-Q3", "v": 6.823}, {"periodo": "2020-Q4", "v": 8.623}, {"periodo": "2021-Q1", "v": 8.147}, {"periodo": "2021-Q2", "v": 9.102}, {"periodo": "2021-Q3", "v": 9.126}, {"periodo": "2021-Q4", "v": 10.49}, {"periodo": "2022-Q1", "v": 10.038}, {"periodo": "2022-Q2", "v": 9.781}, {"periodo": "2022-Q3", "v": 10.262}, {"periodo": "2022-Q4", "v": 11.722}, {"periodo": "2023-Q1", "v": 10.406}, {"periodo": "2023-Q2", "v": 11.109}, {"periodo": "2023-Q3", "v": 10.636}, {"periodo": "2023-Q4", "v": 11.747}, {"periodo": "2024-Q1", "v": 9.501}, {"periodo": "2024-Q2", "v": 11.172}, {"periodo": "2024-Q3", "v": 13.207}, {"periodo": "2024-Q4", "v": 13.635}, {"periodo": "2025-Q1", "v": 13.187}, {"periodo": "2025-Q2", "v": 14.148}, {"periodo": "2025-Q3", "v": 13.828}, {"periodo": "2025-Q4", "v": 13.981}, {"periodo": "2026-Q1", "v": 14.415}];
+
+(function () {
+  const svg = document.getElementById('svg');
+  const tooltip = document.getElementById('tooltip');
+  const W = 600, H = 220;
+  const padL = 34, padR = 10, padT = 10, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const values = DATA.map(d => d.v);
+  const maxV = Math.max(...values);
+  const minV = 0;
+
+  function x(i) { return padL + (i / (DATA.length - 1)) * plotW; }
+  function y(v) { return padT + plotH - ((v - minV) / (maxV - minV)) * plotH; }
+
+  const ns = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  // gridlines + axis labels (4 steps)
+  const steps = 4;
+  for (let s = 0; s <= steps; s++) {
+    const v = (maxV / steps) * s;
+    const gy = y(v);
+    svg.appendChild(el('line', { class: 'gridline', x1: padL, x2: W - padR, y1: gy, y2: gy }));
+    const t = el('text', { class: 'axis-label', x: 4, y: gy + 3 });
+    t.textContent = Math.round(v).toLocaleString('es-AR');
+    svg.appendChild(t);
+  }
+
+  // year labels every 2 years (Q1 points)
+  DATA.forEach((d, i) => {
+    const m = d.periodo.match(/^(\d{4})-Q1$/);
+    if (m && Number(m[1]) % 2 === 1) {
+      const t = el('text', { class: 'axis-label', x: x(i), y: H - 4, 'text-anchor': 'middle' });
+      t.textContent = m[1];
+      svg.appendChild(t);
+    }
+  });
+
+  // area
+  let areaD = `M ${x(0)} ${y(0)} `;
+  DATA.forEach((d, i) => { areaD += `L ${x(i)} ${y(d.v)} `; });
+  areaD += `L ${x(DATA.length - 1)} ${y(0)} Z`;
+  svg.appendChild(el('path', { class: 'area-path', d: areaD }));
+
+  // line
+  let lineD = '';
+  DATA.forEach((d, i) => { lineD += (i === 0 ? 'M' : 'L') + ` ${x(i)} ${y(d.v)} `; });
+  svg.appendChild(el('path', { class: 'line-path', d: lineD }));
+
+  // record point (last = highest)
+  const lastIdx = DATA.length - 1;
+  const recordDot = el('circle', { class: 'record-dot', cx: x(lastIdx), cy: y(DATA[lastIdx].v), r: 4 });
+  svg.appendChild(recordDot);
+  const recLabel = el('text', { class: 'record-label', x: x(lastIdx) - 6, y: y(DATA[lastIdx].v) - 10, 'text-anchor': 'end' });
+  recLabel.textContent = `récord: US$ ${DATA[lastIdx].v.toFixed(1)}M`;
+  svg.appendChild(recLabel);
+
+  // crosshair + hover dot
+  const crosshair = el('line', { class: 'crosshair', x1: 0, x2: 0, y1: padT, y2: H - padB });
+  svg.appendChild(crosshair);
+  const hoverDot = el('circle', { class: 'hover-dot', r: 4 });
+  svg.appendChild(hoverDot);
+
+  // hit area
+  const hit = el('rect', { class: 'hit-area', x: padL, y: padT, width: plotW, height: plotH });
+  svg.appendChild(hit);
+
+  function nearestIndex(px) {
+    const rel = (px - padL) / plotW;
+    let i = Math.round(rel * (DATA.length - 1));
+    return Math.max(0, Math.min(DATA.length - 1, i));
+  }
+
+  function showAt(i, clientX, clientY) {
+    const d = DATA[i];
+    crosshair.setAttribute('x1', x(i));
+    crosshair.setAttribute('x2', x(i));
+    crosshair.setAttribute('opacity', '1');
+    hoverDot.setAttribute('cx', x(i));
+    hoverDot.setAttribute('cy', y(d.v));
+    hoverDot.setAttribute('opacity', '1');
+    tooltip.innerHTML = '';
+    const strong = document.createElement('strong');
+    strong.textContent = `US$ ${d.v.toFixed(1)}M`;
+    tooltip.appendChild(strong);
+    tooltip.appendChild(document.createElement('br'));
+    const span = document.createElement('span');
+    span.textContent = d.periodo.replace('-Q', ' — T');
+    tooltip.appendChild(span);
+    const rect = svg.getBoundingClientRect();
+    const scale = rect.width / W;
+    tooltip.style.left = (x(i) * scale) + 'px';
+    tooltip.style.top = (y(d.v) * scale) + 'px';
+    tooltip.classList.add('show');
+  }
+  function hide() {
+    crosshair.setAttribute('opacity', '0');
+    hoverDot.setAttribute('opacity', '0');
+    tooltip.classList.remove('show');
+  }
+
+  hit.addEventListener('pointermove', (e) => {
+    const rect = svg.getBoundingClientRect();
+    const scale = W / rect.width;
+    const px = (e.clientX - rect.left) * scale;
+    showAt(nearestIndex(px));
+  });
+  hit.addEventListener('pointerleave', hide);
+
+  // table
+  const tbody = document.getElementById('tableBody');
+  DATA.forEach(d => {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    td1.textContent = d.periodo.replace('-Q', ' — T');
+    const td2 = document.createElement('td');
+    td2.textContent = d.v.toFixed(1);
+    tr.appendChild(td1); tr.appendChild(td2);
+    tbody.appendChild(tr);
+  });
+  const toggleBtn = document.getElementById('toggleTable');
+  const table = document.getElementById('table');
+  toggleBtn.addEventListener('click', () => {
+    const showing = table.classList.toggle('show');
+    toggleBtn.textContent = showing ? 'Ocultar tabla' : 'Ver tabla';
+  });
+})();
+</script>
+
+</body>
+</html>

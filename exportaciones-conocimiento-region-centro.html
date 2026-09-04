@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Región centro — exportaciones de conocimiento</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --muted:          #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --bar-prev:       #86b6ef;
+    --bar-curr:       #2a78d6;
+    --success-text:   #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --muted:          #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --bar-prev:       #5a86bd;
+      --bar-curr:       #3987e5;
+      --success-text:   #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted:          #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --bar-prev:       #5a86bd;
+    --bar-curr:       #3987e5;
+    --success-text:   #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--page); }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  .viz-root {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px 16px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .viz-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0 0 2px; }
+  .viz-sub { font-size: 12px; color: var(--text-secondary); margin: 0 0 16px; }
+
+  .panels { display: flex; gap: 18px; }
+  .panel { flex: 1; min-width: 0; }
+  .panel-title { font-size: 12px; font-weight: 600; color: var(--text-primary); margin: 0 0 2px; text-align: center; }
+  .panel-delta { font-size: 11px; font-weight: 600; color: var(--success-text); text-align: center; margin: 0 0 8px; }
+
+  .bars { display: flex; align-items: flex-end; justify-content: center; gap: 14px; height: 120px; position: relative; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .bar-cap { font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+  .bar { width: 22px; border-radius: 4px 4px 0 0; cursor: pointer; outline-offset: 2px; }
+  .bar.prev { background: var(--bar-prev); }
+  .bar.curr { background: var(--bar-curr); }
+  .bar:hover, .bar:focus-visible { filter: brightness(1.08); }
+  .baseline { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--baseline); }
+  .panel-axis { display: flex; justify-content: center; gap: 14px; margin-top: 6px; }
+  .panel-axis span { width: 22px; font-size: 9.5px; color: var(--text-secondary); text-align: center; }
+
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--text-primary);
+    color: var(--surface-1);
+    font-size: 11px;
+    padding: 6px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(-50%, -110%);
+    transition: opacity .1s ease;
+    z-index: 5;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip strong { font-weight: 600; }
+
+  .viz-footer { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--gridline); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .viz-source { font-size: 10.5px; color: var(--muted); }
+  .viz-source a { color: var(--muted); }
+  .table-toggle { font-size: 10.5px; color: var(--text-secondary); background: none; border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; cursor: pointer; }
+  .table-toggle:hover { background: var(--gridline); }
+
+  table.viz-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 12px; display: none; }
+  table.viz-table.show { display: table; }
+  table.viz-table th, table.viz-table td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--gridline); color: var(--text-primary); }
+  table.viz-table th { color: var(--text-secondary); font-weight: 500; }
+  table.viz-table td:last-child, table.viz-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<div class="viz-root">
+  <p class="viz-title">La región centro exportó más economía del conocimiento</p>
+  <p class="viz-sub">Primer trimestre de cada año, en millones de dólares</p>
+
+  <div class="panels" id="panels"></div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <table class="viz-table" id="table">
+    <thead><tr><th>Provincia</th><th>1T 2025</th><th>1T 2026</th><th>Variación</th></tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <div class="viz-footer">
+    <span class="viz-source">Fuente: <a href="https://app.powerbi.com/view?r=eyJrIjoiMDRmMTIxZDMtODI5Ny00ZGYyLWE1ZWMtOTRlMTBlMDNjYjZhIiwidCI6ImNiODg0ZGI1LTI0ODUtNGY5Yi05MzhlLTNlNjIxZjIyMjU3YiIsImMiOjR9" target="_blank" rel="noopener">Ministerio de Economía de la Nación</a> (dashboard público de exportaciones de servicios basados en conocimiento).</span>
+    <button class="table-toggle" id="toggleTable" type="button">Ver tabla</button>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  { nombre: "Entre Ríos", v25: 13.187, v26: 14.415 },
+  { nombre: "Córdoba", v25: 178.746, v26: 200.429 },
+  { nombre: "Santa Fe", v25: 117.244, v26: 139.039 }
+];
+
+(function () {
+  const panels = document.getElementById('panels');
+  const tooltip = document.getElementById('tooltip');
+  const tbody = document.getElementById('tableBody');
+
+  DATA.forEach(d => {
+    const delta = ((d.v26 / d.v25 - 1) * 100);
+    const maxV = Math.max(d.v25, d.v26);
+    const hPrev = Math.round((d.v25 / maxV) * 96) + 4;
+    const hCurr = Math.round((d.v26 / maxV) * 96) + 4;
+
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+    panel.innerHTML = `
+      <p class="panel-title">${d.nombre}</p>
+      <p class="panel-delta">+${delta.toFixed(1)}%</p>
+      <div class="bars">
+        <div class="baseline"></div>
+        <div class="bar-col">
+          <div class="bar-cap">${d.v25.toFixed(1)}</div>
+          <div class="bar prev" tabindex="0" data-label="${d.nombre} · 1T 2025" data-value="US$ ${d.v25.toFixed(1)}M" style="height:${hPrev}px;"></div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-cap">${d.v26.toFixed(1)}</div>
+          <div class="bar curr" tabindex="0" data-label="${d.nombre} · 1T 2026" data-value="US$ ${d.v26.toFixed(1)}M" style="height:${hCurr}px;"></div>
+        </div>
+      </div>
+      <div class="panel-axis"><span>2025</span><span>2026</span></div>
+    `;
+    panels.appendChild(panel);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${d.nombre}</td><td>${d.v25.toFixed(1)}</td><td>${d.v26.toFixed(1)}</td><td>+${delta.toFixed(1)}%</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.querySelectorAll('.bar').forEach(bar => {
+    function show(e) {
+      const label = bar.getAttribute('data-label');
+      const value = bar.getAttribute('data-value');
+      tooltip.innerHTML = '';
+      const strong = document.createElement('strong');
+      strong.textContent = value;
+      tooltip.appendChild(strong);
+      tooltip.appendChild(document.createElement('br'));
+      const span = document.createElement('span');
+      span.textContent = label;
+      tooltip.appendChild(span);
+      const rect = bar.getBoundingClientRect();
+      tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+      tooltip.style.top = rect.top + 'px';
+      tooltip.classList.add('show');
+    }
+    function hide() { tooltip.classList.remove('show'); }
+    bar.addEventListener('pointerenter', show);
+    bar.addEventListener('pointermove', show);
+    bar.addEventListener('pointerleave', hide);
+    bar.addEventListener('focus', show);
+    bar.addEventListener('blur', hide);
+  });
+
+  const toggleBtn = document.getElementById('toggleTable');
+  const table = document.getElementById('table');
+  toggleBtn.addEventListener('click', () => {
+    const showing = table.classList.toggle('show');
+    toggleBtn.textContent = showing ? 'Ocultar tabla' : 'Ver tabla';
+  });
+})();
+</script>
+
+</body>
+</html>
