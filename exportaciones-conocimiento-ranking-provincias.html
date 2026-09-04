@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ranking de provincias — exportaciones de conocimiento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  .viz-root {
+    color-scheme: light;
+    --page:     #f5f5f7;
+    --surface:  #ffffff;
+    --ink:      #1d1d1f;
+    --muted:    #86868b;
+    --hair:     #e6e6e8;
+    --hair2:    #f0f0f2;
+    --accent:       #0071e3;
+    --bar-default:  #d8d8dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --page:     #000000;
+      --surface:  #1c1c1e;
+      --ink:      #f5f5f7;
+      --muted:    #98989d;
+      --hair:     #38383a;
+      --hair2:    #2c2c2e;
+      --accent:       #0a84ff;
+      --bar-default:  #3a3a3d;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --page:     #000000;
+    --surface:  #1c1c1e;
+    --ink:      #f5f5f7;
+    --muted:    #98989d;
+    --hair:     #38383a;
+    --hair2:    #2c2c2e;
+    --accent:       #0a84ff;
+    --bar-default:  #3a3a3d;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--page); }
+  body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .viz-root {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 22px 24px 18px;
+    max-width: 680px;
+    margin: 0 auto;
+    letter-spacing: -.005em;
+  }
+  .viz-sub { font-size: 12.5px; color: var(--muted); margin: 0 0 18px; font-weight: 500; }
+
+  .rows { display: flex; flex-direction: column; gap: 2px; }
+  .row {
+    display: grid;
+    grid-template-columns: 122px 1fr 58px;
+    align-items: center;
+    gap: 10px;
+    padding: 3.5px 0;
+    border-radius: 6px;
+  }
+  .row.hover { background: var(--hair2); }
+  .row-name { font-size: 12.5px; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row.is-er .row-name { font-weight: 800; }
+  .bar-track { position: relative; height: 14px; }
+  .bar { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; background: var(--bar-default); min-width: 2px; }
+  .row.is-er .bar { background: var(--accent); }
+  .row-value { font-size: 12px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .row.is-er .row-value { color: var(--ink); }
+
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--surface);
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(-50%, -112%);
+    transition: opacity .1s ease;
+    z-index: 5;
+    box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    font-weight: 500;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip strong { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .viz-footer { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--hair); }
+  .viz-source { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .viz-source a { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="viz-root">
+  <p class="viz-sub">Exportaciones de economía del conocimiento en los últimos 12 meses (2T 2025 — 1T 2026), millones de dólares</p>
+
+  <div class="rows" id="rows"></div>
+  <div class="tooltip" id="tooltip"></div>
+
+  <div class="viz-footer">
+    <span class="viz-source">Fuente: <a href="https://app.powerbi.com/view?r=eyJrIjoiMDRmMTIxZDMtODI5Ny00ZGYyLWE1ZWMtOTRlMTBlMDNjYjZhIiwidCI6ImNiODg0ZGI1LTI0ODUtNGY5Yi05MzhlLTNlNjIxZjIyMjU3YiIsImMiOjR9" target="_blank" rel="noopener">Ministerio de Economía de la Nación</a></span>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  { nombre: "Ciudad Autónoma de Buenos Aires", v: 6160.42, er: false },
+  { nombre: "Buenos Aires", v: 1872.46, er: false },
+  { nombre: "Córdoba", v: 772.41, er: false },
+  { nombre: "Santa Fe", v: 528.51, er: false },
+  { nombre: "Mendoza", v: 194.28, er: false },
+  { nombre: "Tucumán", v: 86.34, er: false },
+  { nombre: "Río Negro", v: 63.73, er: false },
+  { nombre: "Entre Ríos", v: 56.37, er: true },
+  { nombre: "Corrientes", v: 51.87, er: false },
+  { nombre: "Jujuy", v: 44.71, er: false },
+  { nombre: "Chaco", v: 38.92, er: false },
+  { nombre: "Neuquén", v: 37.04, er: false },
+  { nombre: "Salta", v: 27.45, er: false },
+  { nombre: "San Juan", v: 23.05, er: false },
+  { nombre: "Misiones", v: 19.11, er: false },
+  { nombre: "San Luis", v: 17.91, er: false },
+  { nombre: "Chubut", v: 14.63, er: false },
+  { nombre: "La Pampa", v: 13.90, er: false },
+  { nombre: "Santiago del Estero", v: 12.43, er: false },
+  { nombre: "Formosa", v: 10.51, er: false },
+  { nombre: "Santa Cruz", v: 10.09, er: false },
+  { nombre: "Catamarca", v: 9.01, er: false },
+  { nombre: "Tierra del Fuego", v: 5.98, er: false },
+  { nombre: "La Rioja", v: 3.06, er: false }
+];
+
+(function () {
+  const rowsEl = document.getElementById('rows');
+  const tooltip = document.getElementById('tooltip');
+  const maxV = Math.max(...DATA.map(d => d.v));
+
+  DATA.forEach((d, i) => {
+    const pct = Math.max((d.v / maxV) * 100, 0.4);
+    const row = document.createElement('div');
+    row.className = 'row' + (d.er ? ' is-er' : '');
+    row.innerHTML = `
+      <div class="row-name">${i + 1}. ${d.nombre}</div>
+      <div class="bar-track"><div class="bar" style="width:${pct}%"></div></div>
+      <div class="row-value">${d.v >= 100 ? Math.round(d.v).toLocaleString('es-AR') : d.v.toFixed(1)}</div>
+    `;
+    rowsEl.appendChild(row);
+
+    function show(e) {
+      row.classList.add('hover');
+      tooltip.innerHTML = '';
+      const strong = document.createElement('strong');
+      strong.textContent = `US$ ${d.v.toFixed(1)}M`;
+      tooltip.appendChild(strong);
+      tooltip.appendChild(document.createElement('br'));
+      const span = document.createElement('span');
+      span.textContent = d.nombre;
+      tooltip.appendChild(span);
+      tooltip.style.left = e.clientX + 'px';
+      tooltip.style.top = row.getBoundingClientRect().top + 'px';
+      tooltip.classList.add('show');
+    }
+    function hide() {
+      row.classList.remove('hover');
+      tooltip.classList.remove('show');
+    }
+    row.addEventListener('pointerenter', show);
+    row.addEventListener('pointermove', show);
+    row.addEventListener('pointerleave', hide);
+  });
+})();
+</script>
+
+</body>
+</html>
